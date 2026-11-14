@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Solicitud radicada')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('radicar')}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card card-soft text-center p-4 p-md-5">
+                <div class="display-4 text-success"><i class="bi bi-check-circle-fill"></i></div>
+                <h2 class="fw-bold mt-2">¡Solicitud radicada!</h2>
+                <p class="text-secondary">Guarde estos datos: los necesitará para consultar el estado de su
+                    <span th:text="${#strings.toLowerCase(tipoEtiqueta)}">petición</span>.</p>
+
+                <div class="text-start mt-3">
+                    <div class="small text-secondary">Número de radicado</div>
+                    <div class="radicado-box mb-3" id="radicadoTexto" th:text="${radicado}">PQRS-2026-000001</div>
+                    <div class="small text-secondary">Código de consulta</div>
+                    <div class="radicado-box mb-3" id="codigoTexto" th:text="${codigo}">AB12CD</div>
+                    <div class="alert alert-info mb-0">
+                        Fecha límite de respuesta:
+                        <strong th:text="${#temporals.format(vencimiento, 'dd/MM/yyyy')}">01/01/2026</strong>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex flex-wrap gap-2 justify-content-center">
+                    <button class="btn btn-outline-secondary" type="button" id="copiar"><i class="bi bi-clipboard"></i> Copiar datos</button>
+                    <a class="btn btn-primary" th:href="@{/consulta}"><i class="bi bi-search"></i> Consultar estado</a>
+                    <a class="btn btn-light" th:href="@{/}">Volver al inicio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.getElementById('copiar').addEventListener('click', function () {
+        var texto = 'Radicado: ' + document.getElementById('radicadoTexto').textContent.trim()
+                  + ' | Código de consulta: ' + document.getElementById('codigoTexto').textContent.trim();
+        navigator.clipboard.writeText(texto);
+        this.innerHTML = '<i class="bi bi-check2"></i> Copiado';
+    });
+</script>
+</body>
+</html>

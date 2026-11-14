@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Consultar estado')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('consulta')}"></nav>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-4">Consultar el estado de mi solicitud</h2>
+
+            <div class="card card-soft mb-4">
+                <div class="card-body">
+                    <form th:action="@{/consulta}" method="post" class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label" for="radicado">Número de radicado</label>
+                            <input type="text" id="radicado" name="radicado" class="form-control"
+                                   placeholder="PQRS-2026-000001" th:value="${radicadoIngresado}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="codigo">Código de consulta</label>
+                            <input type="text" id="codigo" name="codigo" class="form-control" maxlength="10" required>
+                        </div>
+                        <div class="col-md-3 d-grid">
+                            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Consultar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-warning" th:if="${noEncontrado}">
+                No encontramos una solicitud con ese radicado y código. Verifique los datos e intente de nuevo.
+            </div>
+
+            <div class="card card-soft" th:if="${solicitud != null}">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span th:text="${solicitud.radicado}">PQRS-2026-000001</span>
+                    <span th:replace="~{fragments/layout :: semaforo(${fila.semaforo})}"></span>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Tipo</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.tipo.etiqueta}">Petición</dd>
+                        <dt class="col-sm-4">Asunto</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.asunto}">Asunto</dd>
+                        <dt class="col-sm-4">Estado</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.estado.etiqueta}">Radicada</dd>
+                        <dt class="col-sm-4">Fecha de radicación</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(solicitud.fechaRadicacion, 'dd/MM/yyyy')}">01/01/2026</dd>
+                        <dt class="col-sm-4">Fecha límite</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(solicitud.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</dd>
+                        <dt class="col-sm-4" th:if="${solicitud.estado.name() != 'RESPONDIDA'}">Tiempo restante</dt>
+                        <dd class="col-sm-8" th:if="${solicitud.estado.name() != 'RESPONDIDA'}" th:text="${fila.textoPlazo}">5 d. háb.</dd>
+                    </dl>
+
+                    <div class="mt-4" th:if="${solicitud.respuesta != null}">
+                        <h6 class="fw-bold">Respuesta</h6>
+                        <div class="p-3 bg-light rounded" style="white-space: pre-line;" th:text="${solicitud.respuesta}">Respuesta</div>
+                        <div class="small text-secondary mt-1">
+                            Respondida el <span th:text="${#temporals.format(solicitud.fechaRespuesta, 'dd/MM/yyyy')}">01/01/2026</span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mt-4 mb-3">Historial</h6>
+                    <ul class="timeline">
+                        <li th:each="seg : ${seguimientos}">
+                            <div class="fw-semibold" th:text="${seg.accion}">Radicada</div>
+                            <div class="fecha" th:text="${#temporals.format(seg.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026 09:00</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

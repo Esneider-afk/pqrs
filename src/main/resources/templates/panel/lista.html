@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Solicitudes')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('solicitudes')}"></nav>
+
+<main class="container py-4">
+    <h2 class="fw-bold mb-4">Solicitudes</h2>
+
+    <div class="card card-soft mb-4">
+        <div class="card-body">
+            <form th:action="@{/panel/solicitudes}" method="get" class="row g-2 align-items-end">
+                <div class="col-lg-3">
+                    <label class="form-label small mb-1">Buscar</label>
+                    <input type="text" name="q" class="form-control" th:value="${q}" placeholder="Radicado, asunto o nombre">
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label small mb-1">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option th:each="e : ${estados}" th:value="${e}" th:text="${e.etiqueta}" th:selected="${e == estadoSel}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label small mb-1">Tipo</label>
+                    <select name="tipo" class="form-select">
+                        <option value="">Todos</option>
+                        <option th:each="t : ${tipos}" th:value="${t}" th:text="${t.etiqueta}" th:selected="${t == tipoSel}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <label class="form-label small mb-1">Semáforo</label>
+                    <select name="semaforo" class="form-select">
+                        <option value="">Todos</option>
+                        <option th:each="s : ${semaforos}" th:value="${s}" th:text="${s.etiqueta}" th:selected="${s == semaforoSel}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card card-soft">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>Radicado</th><th>Código</th><th>Tipo</th><th>Asunto</th><th>Dependencia</th>
+                    <th>Vence</th><th>Restante</th><th>Estado</th><th>Semáforo</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="fila : ${filas}">
+                    <td><a th:href="@{/panel/solicitudes/{id}(id=${fila.solicitud.id})}" th:text="${fila.solicitud.radicado}">PQRS</a></td>
+                    <td><code th:text="${fila.solicitud.codigoConsulta}">AB12CD</code></td>
+                    <td th:text="${fila.solicitud.tipo.etiqueta}">Petición</td>
+                    <td th:text="${#strings.abbreviate(fila.solicitud.asunto, 50)}">Asunto</td>
+                    <td th:text="${fila.solicitud.dependencia != null} ? ${fila.solicitud.dependencia.nombre} : '—'">Dependencia</td>
+                    <td th:text="${#temporals.format(fila.solicitud.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</td>
+                    <td th:text="${fila.textoPlazo}">5 d. háb.</td>
+                    <td th:text="${fila.solicitud.estado.etiqueta}">Radicada</td>
+                    <td><span th:replace="~{fragments/layout :: semaforo(${fila.semaforo})}"></span></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(filas)}">
+                    <td colspan="9" class="text-center text-secondary py-4">No hay solicitudes con esos filtros.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

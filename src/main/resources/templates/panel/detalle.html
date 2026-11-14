@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Detalle de solicitud')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('solicitudes')}"></nav>
+
+<main class="container py-4">
+    <a th:href="@{/panel/solicitudes}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Volver al listado</a>
+
+    <div class="alert alert-success mt-3" th:if="${ok}" th:text="${ok}"></div>
+    <div class="alert alert-danger mt-3" th:if="${error}" th:text="${error}"></div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-8">
+            <div class="card card-soft">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="fs-5" th:text="${solicitud.radicado}">PQRS-2026-000001</span>
+                    <span th:replace="~{fragments/layout :: semaforo(${fila.semaforo})}"></span>
+                </div>
+                <div class="card-body">
+
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-4 p-3 bg-light rounded">
+                        <div>
+                            <div class="small text-secondary">Código de consulta del ciudadano</div>
+                            <div class="fs-5 fw-bold" th:text="${solicitud.codigoConsulta}">AB12CD</div>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-md-auto" id="copiarDatos"
+                                th:attr="data-texto=${'Radicado: ' + solicitud.radicado + ' | Código de consulta: ' + solicitud.codigoConsulta}">
+                            <i class="bi bi-clipboard"></i> Copiar radicado y código
+                        </button>
+                        <form th:action="@{/consulta}" method="post" target="_blank" class="m-0">
+                            <input type="hidden" name="radicado" th:value="${solicitud.radicado}">
+                            <input type="hidden" name="codigo" th:value="${solicitud.codigoConsulta}">
+                            <button class="btn btn-outline-primary btn-sm" type="submit">
+                                <i class="bi bi-eye"></i> Ver como lo ve el ciudadano
+                            </button>
+                        </form>
+                    </div>
+
+                    <h5 class="fw-bold" th:text="${solicitud.asunto}">Asunto</h5>
+                    <div class="p-3 bg-light rounded mb-4" style="white-space: pre-line;" th:text="${solicitud.descripcion}">Descripción</div>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Tipo</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.tipo.etiqueta}">Petición</dd>
+                        <dt class="col-sm-4">Prioridad</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.prioridad.etiqueta}">Media</dd>
+                        <dt class="col-sm-4">Estado</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.estado.etiqueta}">Radicada</dd>
+                        <dt class="col-sm-4">Radicación</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(solicitud.fechaRadicacion, 'dd/MM/yyyy')}">01/01/2026</dd>
+                        <dt class="col-sm-4">Fecha límite</dt>
+                        <dd class="col-sm-8"><span th:text="${#temporals.format(solicitud.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</span>
+                            <span class="text-secondary" th:if="${solicitud.estado.name() != 'RESPONDIDA'}" th:text="'(' + ${fila.textoPlazo} + ')'"></span></dd>
+                        <dt class="col-sm-4">Dependencia</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.dependencia != null} ? ${solicitud.dependencia.nombre} : '—'">Dependencia</dd>
+                        <dt class="col-sm-4">Funcionario</dt>
+                        <dd class="col-sm-8" th:text="${solicitud.funcionarioAsignado != null} ? ${solicitud.funcionarioAsignado.nombre} : 'Sin asignar'">Sin asignar</dd>
+                        <dt class="col-sm-4">Solicitante</dt>
+                        <dd class="col-sm-8">
+                            <span th:text="${solicitud.nombreSolicitante}">Nombre</span>
+                            <span class="badge text-bg-secondary ms-1" th:if="${solicitud.anonimo}">Anónimo</span>
+                        </dd>
+                        <dt class="col-sm-4" th:if="${!solicitud.anonimo}">Contacto</dt>
+                        <dd class="col-sm-8" th:if="${!solicitud.anonimo}">
+                            <span th:text="${solicitud.documento}">1098</span>
+                            <span th:if="${solicitud.email != null}"> · <span th:text="${solicitud.email}">correo</span></span>
+                            <span th:if="${solicitud.telefono != null}"> · <span th:text="${solicitud.telefono}">tel</span></span>
+                        </dd>
+                        <dt class="col-sm-4">Clasificación asistida</dt>
+                        <dd class="col-sm-8 small text-secondary" th:text="${solicitud.clasificacionSugerida}">Sugerencia</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card card-soft mt-4" th:if="${solicitud.estado.name() == 'RESPONDIDA'}">
+                <div class="card-header">Respuesta emitida</div>
+                <div class="card-body">
+                    <div style="white-space: pre-line;" th:text="${solicitud.respuesta}">Respuesta</div>
+                    <div class="small text-secondary mt-2">
+                        Fecha de respuesta: <span th:text="${#temporals.format(solicitud.fechaRespuesta, 'dd/MM/yyyy')}">01/01/2026</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-soft mt-4" th:if="${solicitud.estado.name() != 'RESPONDIDA'}">
+                <div class="card-header">Responder al ciudadano</div>
+                <div class="card-body">
+                    <form th:action="@{/panel/solicitudes/{id}/responder(id=${solicitud.id})}" method="post">
+                        <textarea name="respuesta" class="form-control mb-3" rows="6" minlength="20" required
+                                  placeholder="Redacte la respuesta de fondo a la solicitud (mínimo 20 caracteres)"></textarea>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle"></i> Registrar respuesta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card card-soft mb-4" th:if="${solicitud.estado.name() != 'RESPONDIDA'}">
+                <div class="card-header">Gestión</div>
+                <div class="card-body d-grid gap-3">
+                    <form th:action="@{/panel/solicitudes/{id}/tomar(id=${solicitud.id})}" method="post" class="d-grid">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-hand-index-thumb"></i> Tomar en trámite</button>
+                    </form>
+                    <form th:if="${esAdmin}" th:action="@{/panel/solicitudes/{id}/dependencia(id=${solicitud.id})}" method="post">
+                        <label class="form-label small mb-1">Reasignar dependencia</label>
+                        <div class="input-group">
+                            <select name="dependenciaId" class="form-select">
+                                <option th:each="d : ${dependencias}" th:value="${d.id}" th:text="${d.nombre}"
+                                        th:selected="${solicitud.dependencia != null and solicitud.dependencia.id == d.id}"></option>
+                            </select>
+                            <button class="btn btn-outline-secondary" type="submit">Asignar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card card-soft">
+                <div class="card-header">Historial</div>
+                <div class="card-body">
+                    <ul class="timeline">
+                        <li th:each="seg : ${seguimientos}">
+                            <div class="fw-semibold" th:text="${seg.accion}">Radicada</div>
+                            <div class="small" th:text="${seg.detalle}">Detalle</div>
+                            <div class="fecha"><span th:text="${#temporals.format(seg.fecha, 'dd/MM/yyyy HH:mm')}">fecha</span>
+                                · <span th:text="${seg.autor}">autor</span></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    document.getElementById('copiarDatos').addEventListener('click', function () {
+        navigator.clipboard.writeText(this.dataset.texto);
+        this.innerHTML = '<i class="bi bi-check2"></i> Copiado';
+    });
+</script>
+</body>
+</html>

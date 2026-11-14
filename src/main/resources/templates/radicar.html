@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Radicar solicitud')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('radicar')}"></nav>
+
+<main class="container py-5">
+    <h2 class="fw-bold mb-4">Radicar una solicitud</h2>
+
+    <form th:action="@{/radicar}" th:object="${form}" method="post" novalidate>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card card-soft mb-4">
+                    <div class="card-header">1. Cuéntenos su caso</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo de solicitud</label>
+                            <select th:field="*{tipo}" class="form-select" th:classappend="${#fields.hasErrors('tipo')} ? 'is-invalid'">
+                                <option value="">Seleccione el tipo…</option>
+                                <option th:each="t : ${tipos}" th:value="${t}" th:text="${t.etiqueta}"
+                                        th:attr="data-plazo=${t.diasHabiles}">Petición</option>
+                            </select>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="asunto" class="form-label">Asunto</label>
+                            <input type="text" th:field="*{asunto}" class="form-control" maxlength="200"
+                                   th:classappend="${#fields.hasErrors('asunto')} ? 'is-invalid'"
+                                   placeholder="Resuma su solicitud en una frase">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('asunto')}" th:errors="*{asunto}"></div>
+                        </div>
+                        <div class="mb-1">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea th:field="*{descripcion}" class="form-control" rows="6" maxlength="4000"
+                                      th:classappend="${#fields.hasErrors('descripcion')} ? 'is-invalid'"
+                                      placeholder="Describa los hechos o su solicitud con el mayor detalle posible"></textarea>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>
+                        </div>
+                        <div class="text-end small text-secondary" id="contador">0 / 4000</div>
+                    </div>
+                </div>
+
+                <div class="card card-soft mb-4">
+                    <div class="card-header">2. Datos de contacto</div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3 d-none" id="bloqueAnonimo">
+                            <input class="form-check-input" type="checkbox" th:field="*{anonimo}">
+                            <label class="form-check-label" for="anonimo">Presentar esta denuncia de forma anónima</label>
+                        </div>
+                        <div id="datosPersonales">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label for="nombre" class="form-label">Nombre completo</label>
+                                    <input type="text" th:field="*{nombre}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="documento" class="form-label">Documento de identidad</label>
+                                    <input type="text" th:field="*{documento}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('documento')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('documento')}" th:errors="*{documento}"></div>
+                                </div>
+                                <div class="col-md-7">
+                                    <label for="email" class="form-label">Correo electrónico</label>
+                                    <input type="email" th:field="*{email}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="telefono" class="form-label">Teléfono</label>
+                                    <input type="text" th:field="*{telefono}" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-soft">
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" th:field="*{aceptaTratamiento}"
+                                   th:classappend="${#fields.hasErrors('aceptaTratamiento')} ? 'is-invalid'">
+                            <label class="form-check-label" for="aceptaTratamiento">
+                                Autorizo el tratamiento de mis datos personales para la gestión de esta solicitud (Ley 1581 de 2012).
+                            </label>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('aceptaTratamiento')}" th:errors="*{aceptaTratamiento}"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send"></i> Radicar solicitud</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sticky-side">
+                    <div class="card card-soft mb-3">
+                        <div class="card-body">
+                            <div class="text-secondary small">Plazo de respuesta</div>
+                            <div class="fs-4 fw-bold" id="plazo">—</div>
+                            <div class="small text-secondary">Se cuenta en días hábiles a partir del día siguiente a la radicación.</div>
+                        </div>
+                    </div>
+                    <div class="suggestion-box p-3 d-none" id="sugerencia">
+                        <div class="fw-semibold mb-2"><i class="bi bi-stars"></i> Clasificación sugerida</div>
+                        <div class="small">Tipo: <strong id="sugTipo">—</strong></div>
+                        <div class="small">Dependencia: <strong id="sugDependencia">—</strong></div>
+                        <div class="small mb-2">Prioridad: <strong id="sugPrioridad">—</strong></div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="usarSugerencia">Usar el tipo sugerido</button>
+                        <div class="small text-secondary mt-2">Es solo una sugerencia; usted decide el tipo y un funcionario revisa el caso.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script th:src="@{/js/radicar.js}"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Inicio')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('inicio')}"></nav>
+
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3">Peticiones, Quejas, Reclamos,<br>Sugerencias y Denuncias</h1>
+        <p class="lead mb-4">Radique su solicitud en línea y haga seguimiento a los términos de respuesta con un semáforo claro y en días hábiles.</p>
+        <a class="btn btn-light btn-lg me-2" th:href="@{/radicar}"><i class="bi bi-pencil-square"></i> Radicar solicitud</a>
+        <a class="btn btn-outline-light btn-lg" th:href="@{/consulta}"><i class="bi bi-search"></i> Consultar estado</a>
+    </div>
+</section>
+
+<main class="container" style="margin-top:-3rem;">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card card-soft h-100 p-4 text-center">
+                <div><span class="step-number">1</span></div>
+                <h5>Radique</h5>
+                <p class="text-secondary mb-0">Describa su caso. El sistema le sugiere el tipo y la dependencia, y le entrega un radicado.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-soft h-100 p-4 text-center">
+                <div><span class="step-number">2</span></div>
+                <h5>Tramite</h5>
+                <p class="text-secondary mb-0">La dependencia responsable gestiona la solicitud dentro del término legal.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-soft h-100 p-4 text-center">
+                <div><span class="step-number">3</span></div>
+                <h5>Consulte</h5>
+                <p class="text-secondary mb-0">Con su radicado y código de consulta vea el estado y la respuesta en cualquier momento.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-lg-7">
+            <div class="card card-soft">
+                <div class="card-header">Términos de respuesta por tipo</div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead><tr><th>Tipo</th><th class="text-end">Plazo</th></tr></thead>
+                        <tbody>
+                        <tr th:each="t : ${tipos}">
+                            <td th:text="${t.etiqueta}">Petición</td>
+                            <td class="text-end" th:text="${t.diasHabiles} + ' días hábiles'">15 días hábiles</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card card-soft">
+                <div class="card-header">¿Qué significa el semáforo?</div>
+                <div class="card-body d-grid gap-3">
+                    <div><span class="semaforo-badge semaforo-verde"><span class="semaforo-dot"></span>En término</span>
+                        <small class="text-secondary ms-2">Más de 5 días hábiles de margen</small></div>
+                    <div><span class="semaforo-badge semaforo-amarillo"><span class="semaforo-dot"></span>Por vencer</span>
+                        <small class="text-secondary ms-2">5 días hábiles o menos</small></div>
+                    <div><span class="semaforo-badge semaforo-rojo"><span class="semaforo-dot"></span>Vencida</span>
+                        <small class="text-secondary ms-2">Superó el término legal</small></div>
+                    <div><span class="semaforo-badge semaforo-gris"><span class="semaforo-dot"></span>Respondida</span>
+                        <small class="text-secondary ms-2">Ya se respondió al ciudadano</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

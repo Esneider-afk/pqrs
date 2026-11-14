@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Panel')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('panel')}"></nav>
+
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-0">Panel de control</h2>
+            <div class="text-secondary">
+                <span th:text="${usuario.nombre}">Funcionario</span>
+                <span th:if="${usuario.dependencia != null}"> · <span th:text="${usuario.dependencia.nombre}">Dependencia</span></span>
+            </div>
+        </div>
+        <a class="btn btn-primary" th:href="@{/panel/solicitudes}"><i class="bi bi-list-task"></i> Ver todas las solicitudes</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card card-soft stat-card verde p-3">
+                <div class="text-secondary small">En término</div>
+                <div class="valor" th:text="${resumen.verde}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card card-soft stat-card amarillo p-3">
+                <div class="text-secondary small">Por vencer</div>
+                <div class="valor" th:text="${resumen.amarillo}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card card-soft stat-card rojo p-3">
+                <div class="text-secondary small">Vencidas</div>
+                <div class="valor" th:text="${resumen.rojo}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card card-soft stat-card p-3">
+                <div class="text-secondary small">Respondidas</div>
+                <div class="valor" th:text="${resumen.respondidas}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card card-soft h-100">
+                <div class="card-header">Distribución y cumplimiento</div>
+                <div class="card-body text-center">
+                    <div style="max-width:240px;margin:auto;">
+                        <canvas id="grafico"
+                                th:attr="data-verde=${resumen.verde},data-amarillo=${resumen.amarillo},data-rojo=${resumen.rojo},data-respondidas=${resumen.respondidas}"></canvas>
+                    </div>
+                    <div class="mt-3 text-secondary small">Respondidas dentro del término</div>
+                    <div class="fs-3 fw-bold"
+                         th:text="${resumen.cumplimiento != null} ? ${resumen.cumplimiento} + '%' : '—'">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card card-soft h-100">
+                <div class="card-header">Solicitudes más urgentes</div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr><th>Radicado</th><th>Asunto</th><th>Vence</th><th>Restante</th><th>Semáforo</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="fila : ${resumen.urgentes}">
+                            <td><a th:href="@{/panel/solicitudes/{id}(id=${fila.solicitud.id})}" th:text="${fila.solicitud.radicado}">PQRS</a></td>
+                            <td th:text="${#strings.abbreviate(fila.solicitud.asunto, 45)}">Asunto</td>
+                            <td th:text="${#temporals.format(fila.solicitud.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</td>
+                            <td th:text="${fila.textoPlazo}">5 d. háb.</td>
+                            <td><span th:replace="~{fragments/layout :: semaforo(${fila.semaforo})}"></span></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(resumen.urgentes)}">
+                            <td colspan="5" class="text-center text-secondary py-4">No hay solicitudes pendientes.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    (function () {
+        var canvas = document.getElementById('grafico');
+        var d = canvas.dataset;
+        new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+                labels: ['En término', 'Por vencer', 'Vencidas', 'Respondidas'],
+                datasets: [{
+                    data: [Number(d.verde), Number(d.amarillo), Number(d.rojo), Number(d.respondidas)],
+                    backgroundColor: ['#16a34a', '#f59e0b', '#dc2626', '#94a3b8'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+        });
+    })();
+</script>
+</body>
+</html>
